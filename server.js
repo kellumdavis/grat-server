@@ -3,6 +3,11 @@
 ////////////////////////////////
 // get .env variables
 require("dotenv").config();
+
+
+const controllers = require('./controllers')
+const models = require('./models')
+
 // pull PORT from .env, give default value of 3000
 // pull MONGODB_URL from .env
 const { PORT = 4000, MONGODB_URL } = process.env;
@@ -27,12 +32,18 @@ mongoose.connection
   .on("close", () => console.log("Your are disconnected from mongoose"))
   .on("error", (error) => console.log(error));
 
+  app.use(cors())
+  app.use(express.json())
 ///////////////////////////////
 // ROUTES
 ////////////////////////////////
 // create a test route
-app.get("/", (req, res) => {
-  res.send("say boi");
+app.use('/posts', controllers.PostMessageController)
+
+app.post("/api/register", (req, res) => {
+  console.log(req.body)
+  res.json({ status: 'ok'})
+
 });
 
 ///////////////////////////////
