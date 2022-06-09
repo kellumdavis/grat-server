@@ -20,6 +20,7 @@ const mongoose = require("mongoose");
 // import middlware
 const cors = require("cors");
 const morgan = require("morgan");
+const UserModel = require("./models/user");
 
 ///////////////////////////////
 // DATABASE CONNECTION
@@ -40,9 +41,37 @@ mongoose.connection
 // create a test route
 app.use('/posts', controllers.PostMessageController)
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
   console.log(req.body)
-  res.json({ status: 'ok'})
+  try {
+    const user = await UserModel.create({
+      name: req.body.name,
+      email:  req.body.email,
+      password: req.body.password,
+    })
+    res.json({ status: 'ok'})
+  
+  } catch (err){
+
+    res.json({ status: 'error', error: 'Duplicate email'})
+  }
+
+});
+
+app.post("/api/login", async (req, res) => {
+  console.log(req.body)
+  try {
+    await User.create({
+      name: req.body.name,
+      email:  req.body.email,
+      password: req.body.password,
+    })
+    res.json({ status: 'ok'})
+  
+  } catch (err){
+
+    res.json({ status: 'error', error: 'Duplicate email'})
+  }
 
 });
 
