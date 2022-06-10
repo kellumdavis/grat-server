@@ -12,6 +12,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const User = require("./models/user");
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
 mongoose.connect(MONGODB_URL);
 
@@ -31,10 +32,11 @@ app.use('/posts', controllers.PostMessageController)
 app.post("/api/register", async (req, res) => {
   console.log(req.body)
   try {
+    const newPassword = await bcrypt.hash(req.body.password, 10)
      await User.create({
       name: req.body.name,
       email:  req.body.email,
-      password: req.body.password,
+      password: newPassword,
     })
     res.json({ status: 'ok'})
   
@@ -47,12 +49,15 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
     const user = await User.findOne({
       email:  req.body.email,
-      password: req.body.password,
     })
 
+    if(!user) { return { status: 'error', error: 'Invalid login'}}
+
+    const isPasswordValid = await bcrypt.compare(req.body.password, user.password)
 
 
-    if (user) {
+
+    if (isPasswordValid) {
 
       const token = jwt.sign(
         {
@@ -77,7 +82,7 @@ app.get("/api/user", async (req, res) => {
   const email = decoded.email
   const user = await User.findOne({ email: email })
 
-  return { status: 'ok', quote: user.quote }
+  return res.json({ status: 'ok', quote: user.quote })
   } catch(error) {
     console.log(error)
     res.json({ status: 'error', error: 'invalid token'})
@@ -96,7 +101,7 @@ app.get("/api/user", async (req, res) => {
       { $set: { quote: req.body.quote }}
       )
   
-    return { status: 'ok'}
+    return res.json({ status: 'ok'})
     } catch(error) {
       console.log(error)
       res.json({ status: 'error', error: 'invalid token'})
