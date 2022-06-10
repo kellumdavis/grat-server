@@ -4,13 +4,14 @@ require("dotenv").config();
 const controllers = require('./controllers')
 const models = require('./models')
 
-const { PORT = 4000, MONGODB_URL } = process.env;s
+const { PORT = 4000, MONGODB_URL } = process.env;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const morgan = require("morgan");
 const User = require("./models/user");
+const jwt = require('jsonwebtoken')
 
 mongoose.connect(MONGODB_URL);
 
@@ -49,8 +50,19 @@ app.post("/api/login", async (req, res) => {
       password: req.body.password,
     })
 
+
+
     if (user) {
-      return res.json({ status: 'ok', user: true })
+
+      const token = jwt.sign(
+        {
+            name: user.name,
+            email: user.email,
+      }, 
+      'secure12345'
+      )
+
+      return res.json({ status: 'ok', user: token })
     } else {
       return res.json({ status: 'error', user: false })
     }
