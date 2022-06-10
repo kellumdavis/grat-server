@@ -1,33 +1,19 @@
-///////////////////////////////
-// DEPENDENCIES
-////////////////////////////////
-// get .env variables
 require("dotenv").config();
 
 
 const controllers = require('./controllers')
 const models = require('./models')
 
-// pull PORT from .env, give default value of 3000
-// pull MONGODB_URL from .env
-const { PORT = 4000, MONGODB_URL } = process.env;
-// import express
+const { PORT = 4000, MONGODB_URL } = process.env;s
 const express = require("express");
-// create application object
 const app = express();
-// import mongoose
 const mongoose = require("mongoose");
-// import middlware
 const cors = require("cors");
 const morgan = require("morgan");
-const UserModel = require("./models/user");
+const User = require("./models/user");
 
-///////////////////////////////
-// DATABASE CONNECTION
-////////////////////////////////
-// Establish Connection
 mongoose.connect(MONGODB_URL);
-// Connection Events
+
 mongoose.connection
   .on("open", () => console.log("Your are connected to mongoose"))
   .on("close", () => console.log("Your are disconnected from mongoose"))
@@ -44,7 +30,7 @@ app.use('/posts', controllers.PostMessageController)
 app.post("/api/register", async (req, res) => {
   console.log(req.body)
   try {
-    const user = await UserModel.create({
+     await User.create({
       name: req.body.name,
       email:  req.body.email,
       password: req.body.password,
@@ -52,27 +38,22 @@ app.post("/api/register", async (req, res) => {
     res.json({ status: 'ok'})
   
   } catch (err){
-
     res.json({ status: 'error', error: 'Duplicate email'})
   }
 
 });
 
 app.post("/api/login", async (req, res) => {
-  console.log(req.body)
-  try {
-    await User.create({
-      name: req.body.name,
+    const user = await User.findOne({
       email:  req.body.email,
       password: req.body.password,
     })
-    res.json({ status: 'ok'})
-  
-  } catch (err){
 
-    res.json({ status: 'error', error: 'Duplicate email'})
-  }
-
+    if (user) {
+      return res.json({ status: 'ok', user: true })
+    } else {
+      return res.json({ status: 'error', user: false })
+    }
 });
 
 ///////////////////////////////
