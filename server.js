@@ -68,6 +68,40 @@ app.post("/api/login", async (req, res) => {
     }
 });
 
+app.get("/api/user", async (req, res) => {
+
+  const token = req.headers['x-access-token']
+
+  try {
+  const decoded = jwt.verify(token, 'secure12345' )
+  const email = decoded.email
+  const user = await User.findOne({ email: email })
+
+  return { status: 'ok', quote: user.quote }
+  } catch(error) {
+    console.log(error)
+    res.json({ status: 'error', error: 'invalid token'})
+  }
+  });
+
+  app.post("/api/user", async (req, res) => {
+
+    const token = req.headers['x-access-token']
+  
+    try {
+    const decoded = jwt.verify(token, 'secure12345' )
+    const email = decoded.email
+    await User.updateOne(
+      { email: email },
+      { $set: { quote: req.body.quote }}
+      )
+  
+    return { status: 'ok'}
+    } catch(error) {
+      console.log(error)
+      res.json({ status: 'error', error: 'invalid token'})
+    }
+    });
 ///////////////////////////////
 // LISTENER
 ////////////////////////////////
