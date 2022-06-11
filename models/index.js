@@ -1,3 +1,4 @@
 module.exports = {
-    PostMessage : require('./postMessage')
+    PostMessage : require('./postMessage'),
+    User: require('./user.js')
 }

@@ -12,7 +12,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 const User = require("./models/user");
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
+const { PostMessage } = require("./models");
 
 mongoose.connect(MONGODB_URL);
 
@@ -81,32 +82,42 @@ app.get("/api/user", async (req, res) => {
   const decoded = jwt.verify(token, 'secure12345' )
   const email = decoded.email
   const user = await User.findOne({ email: email })
+  const quote = await PostMessage.find({ userId: user._id })
 
-  return res.json({ status: 'ok', quote: user.quote })
+
+  return res.json({ user: user, quote: quote})
   } catch(error) {
     console.log(error)
     res.json({ status: 'error', error: 'invalid token'})
   }
   });
 
-  app.post("/api/user", async (req, res) => {
+  app.post("/api/posts", async (req, res) => {
 
     const token = req.headers['x-access-token']
   
     try {
     const decoded = jwt.verify(token, 'secure12345' )
     const email = decoded.email
-    await User.updateOne(
-      { email: email },
-      { $set: { quote: req.body.quote }}
-      )
-  
-    return res.json({ status: 'ok'})
+    const user = await User.find({ email: email})
+    console.log('post route',user)
+    // 
+    const newPost = await PostMessage.create(
+      { userId: user._id },
+      { body: req.body.quote}
+    )
+    return res.json({ status: 'ok', post: newPost })
     } catch(error) {
       console.log(error)
       res.json({ status: 'error', error: 'invalid token'})
     }
     });
+
+    app.get("/api/posts" , async (req, res) => {
+      //Add JWT Later
+      const posts = await PostMessage.find({})
+      return res.json({posts, status: 'ok'})
+    })
 ///////////////////////////////
 // LISTENER
 ////////////////////////////////
