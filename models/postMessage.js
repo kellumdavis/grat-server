@@ -5,8 +5,9 @@ const PostSchema = mongoose.Schema({
   title: String,
   body: String,
   userId: {
-    type: mongoose.Types.ObjectId,
-    ref: User,
+      type: mongoose.Types.ObjectId,
+      ref: User,
+      default: "62a6382b66e9937d91e3abf2",
   },
   selectedFile: String,
   likeCount: {
@@ -15,7 +16,7 @@ const PostSchema = mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: new Date(),
+    default: Date.now(),
   },
 });
 
