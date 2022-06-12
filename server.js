@@ -101,10 +101,11 @@ app.get("/api/user", async (req, res) => {
     const email = decoded.email
     const user = await User.find({ email: email})
     console.log('post route',user)
-    // 
+     console.log(req.body)
     const newPost = await PostMessage.create(
       { userId: user._id },
       { body: req.body.quote}
+      
     )
     return res.json({ status: 'ok', post: newPost })
     } catch(error) {
@@ -112,12 +113,32 @@ app.get("/api/user", async (req, res) => {
       res.json({ status: 'error', error: 'invalid token'})
     }
     });
-
+    //GET ALL POSTS
     app.get("/api/posts" , async (req, res) => {
       //Add JWT Later
       const posts = await PostMessage.find({})
       return res.json({posts, status: 'ok'})
     })
+
+    //GET Single POST
+    app.get("/api/posts/:id" , async (req, res) => {
+      //Add JWT Later
+      const post = await PostMessage.findById(req.params.id)
+      return res.json({post, status: 'ok'})
+    })
+
+    app.post("/api/posts/:id" , async (req, res) => {
+      const postData = req.body
+      console.log(postData)
+      const newPost = await PostMessage.findByIdAndUpdate(req.params.id, postData, {new: true})
+      
+      return res.json({ status: 'ok', post: newPost})
+    })  
+
+    app.delete("/api/posts/:id" , async (req, res) => {
+      const postDelete = await PostMessage.deleteOne({ id: req.params.id })
+      return res.json({ status: 'ok'})
+    })  
 ///////////////////////////////
 // LISTENER
 ////////////////////////////////
