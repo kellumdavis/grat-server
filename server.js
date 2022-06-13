@@ -27,7 +27,7 @@ app.use(express.json());
 // ROUTES
 ////////////////////////////////
 // create a test route
-// app.use('/posts', controllers.PostMessageController)
+app.use('/posts', controllers.PostMessageController)
 
 app.post("/api/register", async (req, res) => {
   console.log(req.body);
@@ -48,7 +48,7 @@ app.post("/api/login", async (req, res) => {
   const user = await User.findOne({
     email: req.body.email,
   });
-
+console.log(user)
   if (!user) {
     return { status: "error", error: "Invalid login" };
   }
@@ -82,7 +82,7 @@ app.get("/api/user", async (req, res) => {
     const user = await User.findOne({ email: email });
     const quote = await PostMessage.find({ userId: user._id });
 
-    return res.json({ user: user, quote: quote });
+    return res.json({ user: user, quote: user.quote });
   } catch (error) {
     console.log(error);
     res.json({ status: "error", error: "invalid token" });
@@ -99,8 +99,8 @@ app.post("/api/posts", async (req, res) => {
     console.log("post route", user);
     console.log(req.body);
     const newPost = await PostMessage.create(
-      // { userId: user._id },
-      { body: req.body.quote }
+      { userId: user._id ,
+       body: req.body.quote }
     );
     return res.json({ status: "ok", post: newPost });
   } catch (error) {
@@ -144,6 +144,43 @@ app.delete("/api/posts/:id", async (req, res) => {
   const postDelete = await PostMessage.deleteOne({ id: req.params.id });
   return res.json({ status: "ok" });
 });
+
+
+function create(data){
+  console.log('I am alive')
+  User.create(data)
+  .then((newPost)=>{
+      // console.log(err)
+      console.log(newPost)   
+  }).catch(err=> {
+      console.log(err)
+  }).finally(()=> {
+      process.exit()
+  })
+}
+async function seedingData(){
+  const names =  ['Kellum', 'Jacob', 'Austin', 'Justin', 'Howey', 'Marcos', 'Gigi'];
+  // console.log('I am alive')
+  const hashedPassword = await bcrypt.hash('12345678', 10);
+  for(let i = 0; i < 14; ++i){
+      const id = Math.floor(Math.random() * names.length)
+      const data = {
+          name :  names[id],
+          password : hashedPassword,
+          email: names[id] + Math.floor(Math.random() * 100000000).toString() + '@gmail.com',
+      }
+      console.log(data)
+      try {
+          await User.create(data)
+          
+      } catch (error) {
+          console.log(error);
+      }
+  }
+}
+// seedingData();
+
+
 ///////////////////////////////
 // LISTENER
 ////////////////////////////////
